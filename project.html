@@ -1,0 +1,429 @@
+<html>
+<head>
+  <title>Restaurant Reviews over time.</title>
+  <script src="d3.js"></script>
+  <style>
+  body {
+    text-align: center;
+    font-family: "Arial";
+  }
+  svg {
+    border: solid 1px #000;
+    float: left;
+  }
+  #Charts {
+    float: left;
+  }
+  #Rest {
+    font-size: 10;
+    width: 150;
+    height: 270;
+    border: solid 1px #000;
+    float:left;
+  }
+
+
+  </style>
+</head>
+
+
+<body>
+  <div>
+    <div id="slidecontainer">
+      <p>Change the quarter</p>
+      <input type="range" class="slider" id="myRange" oninput="showVal(this.value)" onchange="showVal(this.value)">
+    </br>
+    <span id = "Quarter">Quarter: </span>
+  </br>
+    <span id = "Business Name"></span>
+  </br>
+    <span id = "Category"></span>
+  </br>
+    <span id = "Ratings"></span>
+  </div>
+</br>
+<div id = "charts" style="display: inline-block">
+
+  <svg id = "Legend"; height = 230 width = 150 ; position = relative>
+
+    </text>
+
+    <rect width = "15" height = "15" fill = "#4286f4" x ="10" y = "10"/>
+      <text
+        style = "font-family: Arial; font-size: 0.7em"
+
+        alignment-baseline = "central"
+        y = "17"
+        x = "35"
+        >American (Traditional)
+      </text>
+      <rect width = "15" height = "15" fill = "#f441b8" x ="10" y = "30"/>
+        <text
+          style = "font-family: Arial; font-size: 0.7em"
+
+          alignment-baseline = "central"
+          y = "37"
+          x = "35"
+          >French
+        </text>
+        <rect width = "15" height = "15" fill = "#41f4a9" x ="10" y = "50"/>
+          <text
+            style = "font-family: Arial; font-size: 0.7em"
+
+            alignment-baseline = "central"
+            y = "57"
+            x = "35"
+            >Mexican
+          </text>
+          <rect width = "15" height = "15" fill = "#f44141" x ="10" y = "70"/>
+            <text
+              style = "font-family: Arial; font-size: 0.7em"
+
+              alignment-baseline = "central"
+              y = "77"
+              x = "35"
+              >Mediterranean
+            </text>
+            <rect width = "15" height = "15" fill = "#d6d211" x ="10" y = "90"/>
+              <text
+                style = "font-family: Arial; font-size: 0.7em"
+
+                alignment-baseline = "central"
+                y = "97"
+                x = "35"
+                >Japanese
+              </text>
+              <rect width = "15" height = "15" fill = "#ffb2ee" x ="10" y = "110"/>
+                <text
+                  style = "font-family: Arial; font-size: 0.7em"
+
+                  alignment-baseline = "central"
+                  y = "117"
+                  x = "35"
+                  >Italian
+                </text>
+                <rect width = "15" height = "15" fill = "#b2fbff" x ="10" y = "130"/>
+                  <text
+                    style = "font-family: Arial; font-size: 0.7em"
+
+                    alignment-baseline = "central"
+                    y = "137"
+                    x = "35"
+                    >Chinese
+                  </text>
+                  <rect width = "15" height = "15" fill = "#560a0a" x ="10" y = "150"/>
+                    <text
+                      style = "font-family: Arial; font-size: 0.7em"
+
+                      alignment-baseline = "central"
+                      y = "157"
+                      x = "35"
+                      >Thai
+                    </text>
+                    <rect width = "15" height = "15" fill = "#8c8282" x ="10" y = "170"/>
+                      <text
+                        style = "font-family: Arial; font-size: 0.7em"
+
+                        alignment-baseline = "central"
+                        y = "177"
+                        x = "35"
+                        >Vietnamese
+                      </text>
+                      <rect width = "15" height = "15" fill = "#6b6a45" x ="10" y = "190"/>
+                        <text
+                          style = "font-family: Arial; font-size: 0.7em"
+
+                          alignment-baseline = "central"
+                          y = "197"
+                          x = "35"
+                          >Indian
+                        </text>
+                        <rect width = "15" height = "15" fill = "#edb100" x ="10" y = "210"/>
+                          <text
+                            style = "font-family: Arial; font-size: 0.7em"
+
+                            alignment-baseline = "central"
+                            y = "217"
+                            x = "35"
+                            >Greek
+                          </text>
+  </svg>
+
+<svg id="chart">
+
+</svg>
+<div id = "Rest">
+  <p>American Restaurants: 35</p>
+  <p>Chinese Restaurants: 6</p>
+  <p>French Restaurants: 10</p>
+  <p>Greek Restaurants: 1</p>
+  <p>Indian Restaurants: 2</p>
+  <p>Italian Restaurants: 9</p>
+  <p>Japanese Restaurants: 17</p>
+  <p>Mediterranean Restaurants: 2</p>
+  <p>Mexican Restaurants: 11</p>
+  <p>Thai Restaurants: 3</p>
+  <p>Vietnamese Restaurants: 3</p>
+</div>
+</div>
+
+</div>
+</body>
+
+<script>
+const WIDTH = 1200
+const HEIGHT = 700
+const CHART_WIDTH=1100
+const CHART_HEIGHT=500
+const MARGIN = {
+  left: 30,
+  top: 17,
+  bottom: 10,
+  right: 10
+}
+var quarterArray = new Array()
+
+function showVal(category)
+{
+  document.getElementById("Quarter").innerHTML = "Quarter: " + quarterArray[category-1]
+}
+
+function getDataForQuarter(data, quarter)
+{
+  var dataList = new Array();
+  for(var i = 0; i < data.length; i++)
+  {
+    quarters = data[i]['quarters']
+    for(var j = 0; j < quarters.length; j++)
+    {
+      if(quarters[j]['quarter'] == quarter)
+      {
+        var dataitem = {
+          "Name": data[i]['business_name'],
+          "Category": data[i]['category'],
+          "Rating": quarters[j]['rating'],
+          "Count": quarters[j]['count']
+        }
+        dataList.push(dataitem)
+      }
+    }
+  }
+  console.log(dataList)
+  return dataList
+}
+
+function drawAxes(data, id) {
+
+  let xScale = d3.scaleBand()
+  .range([0, CHART_WIDTH])
+  .domain(data.map(d => d.business_name))
+  .padding(0.2)
+
+  let yScale = d3.scaleLinear()
+  .range([0, CHART_HEIGHT])
+  .domain([0, 5])
+
+  let container = d3.select(id)
+
+  let xAxis =  d3.axisBottom(xScale)
+  .tickFormat(v => v)
+  .tickSize(0)
+
+  let xAxisGroup = container
+  .append("g")
+  .attr("transform", `translate(${2.1 * MARGIN.left}, ${CHART_HEIGHT + MARGIN.top})`)
+  .call(xAxis)
+  .selectAll("text")
+  .attr("transform", `rotate(60)`)
+  .attr("text-anchor", "start")
+  .attr("alignment-baseline", "hanging")
+
+  xAxisGroup.append("text")
+    .attr("dx", MARGIN.left)
+    .attr("dy", MARGIN.bottom)
+    .text("Business")
+    //.attr("text-anchor", "start")
+    .attr("fill", "black")
+    .attr("alignment-baseline", "hanging")
+    //
+
+  let yaxis = d3.axisLeft(yScale)
+      .ticks(10)
+      .tickFormat(v => 5-v)
+
+  yAxisGroup = d3.select(id)
+  .append("g")
+  .call(yaxis)
+  .attr("transform", `translate(${2 * MARGIN.left},${MARGIN.top})`)
+
+  yAxisGroup.append("text")
+  .attr("dy", MARGIN.top)
+  .attr("dx", MARGIN.left)
+  .text("Rating")
+  .attr("fill", "black")
+  .attr("text-anchor", "middle")
+  .attr("transform", `rotate(270,${MARGIN.left},${MARGIN.top})`)
+
+  var average = 3.8;
+
+  var averageLine = container.append("line")
+                     .attr("x1", 0)
+                     .attr("y1", yScale(5-average))
+                     .attr("x2", CHART_WIDTH)
+                     .attr("y2", yScale(5-average))
+                     .attr("transform", `translate(${2 * MARGIN.left},${MARGIN.top})`)
+                     .attr("stroke-width", 1)
+                     .attr("stroke", "red");
+}
+
+function drawChart(data, id, choice, Categories, colorScale) {
+
+  let container = d3.select(id)
+
+  let xScale = d3.scaleBand()
+  .range([0, CHART_WIDTH])
+  .domain(data.map(d => d.business_name))
+  .padding(0.2)
+
+  let yScale = d3.scaleLinear()
+  .range([0, CHART_HEIGHT])
+  .domain([0, 5])
+
+
+  //console.log(updatedData)
+/*
+  let xAxis =  d3.axisBottom(xScale)
+  .tickFormat(v => v)
+  .tickSize(0)
+
+  let xAxisGroup = container
+  .append("g")
+  .attr("transform", `translate(${2.1 * MARGIN.left}, ${CHART_HEIGHT + MARGIN.top})`)
+  .call(xAxis)
+  .selectAll("text")
+  .attr("transform", `rotate(60)`)
+  .attr("text-anchor", "start")
+  .attr("alignment-baseline", "hanging")
+
+  xAxisGroup.append("text")
+    .attr("dx", MARGIN.left)
+    .attr("dy", MARGIN.bottom)
+    .text("Business")
+    //.attr("text-anchor", "start")
+    .attr("fill", "black")
+    .attr("alignment-baseline", "hanging")
+    //
+
+  let yaxis = d3.axisLeft(yScale)
+      .ticks(10)
+      .tickFormat(v => 5-v)
+
+  yAxisGroup = d3.select(id)
+  .append("g")
+  .call(yaxis)
+  .attr("transform", `translate(${2 * MARGIN.left},${MARGIN.top})`)
+
+  yAxisGroup.append("text")
+  .attr("dy", MARGIN.top)
+  .attr("dx", MARGIN.left)
+  .text("Rating")
+  .attr("fill", "black")
+  .attr("text-anchor", "middle")
+  .attr("transform", `rotate(270,${MARGIN.left},${MARGIN.top})`)
+*/
+
+  quarter = quarterArray[choice]
+  console.log(quarter)
+  let updatedData = getDataForQuarter(data, quarter)
+
+  console.log(colorScale)
+
+
+
+  restaurantBars = d3.select(id)
+      .append("g")
+          .attr("transform", `translate(${2*MARGIN.left},${MARGIN.top})`)
+          .selectAll("rect")
+          .data(updatedData)
+          .enter()
+          .append("rect")//
+
+  restaurantBars
+      .attr("width", xScale.bandwidth())
+      .attr("height", d =>  yScale(d['Rating']))
+      .attr("x", d => xScale(d['Name']))
+      .attr("y", d=> yScale(5)-yScale(d['Rating']))
+      .attr("fill", d=>colorScale(Categories.indexOf(d.Category)))
+      .on("mouseover", function(d) {
+        document.getElementById("Business Name").innerHTML = "Name: " + d.Name
+        document.getElementById("Ratings").innerHTML = "Rating: "+ d.Rating+ " from "+d.Count+" users.";
+        document.getElementById("Category").innerHTML = "Category: "+ d.Category;
+      })
+      //
+    var slider = d3.select("#myRange");
+    slider.on('change', function() {
+      var bars = container.selectAll("rect").remove();
+
+      drawChart(data, "#chart",this.value-1,Categories, colorScale)
+    })
+  //console.log(quarterArray)
+}
+
+function makeSlider(data, id) {
+  var slider = document.getElementById(id)
+  quarters = data.map(d => {
+    return d.quarters
+  })
+  var quarterSet = new Set();
+  for(var i = 0; i < quarters.length; i++)
+  {
+    for(var j = 0; j < quarters[i].length; j++)
+    {
+      quarterSet.add(quarters[i][j].quarter)
+    }
+  }
+
+  quarterArray = Array.from(quarterSet)
+  quarterArray.sort(function(a,b) {
+    a = a.split('/').reverse().join('');
+    b = b.split('/').reverse().join('');
+    return a > b ? 1 : a < b ? -1 : 0;
+  });
+  //console.log(quarterArray)
+  document.getElementById(id).min = 1
+  document.getElementById(id).value = 1
+  document.getElementById(id).max = quarterArray.length
+  return quarterArray;
+}
+
+
+function loadData() {
+  d3.queue()
+  .defer(d3.json, "Las Vegas Business.json")
+  .await((err, data) => {
+    //console.log(data)
+    makeSlider(data, "myRange")
+    var sliderValue = document.getElementById("myRange").value
+    Categories = [...new Set(data.map(function(d) {return d.category}))].sort()
+    let colorScale = d3.scaleOrdinal().domain(Categories).range(['#4286f4', '#f441b8', '#41f4a9', '#f44141', '#d6d211', '#ffb2ee', '#b2fbff', '#560a0a', '#8c8282', '#6b6a45', '#edb100'])
+    data.sort(function(x, y){
+     return d3.ascending(x.category, y.category);
+    })
+    drawAxes(data, "#chart")
+    drawChart(data, "#chart", sliderValue-1, Categories, colorScale)
+
+    //console.log(sliderValue)
+  })
+}
+
+function main() {
+  d3.select("#chart")
+  .attr("width", WIDTH)
+  .attr("height", HEIGHT)
+  loadData()
+}
+
+main()
+</script>
+
+</html>
